@@ -13,7 +13,7 @@ export const registerCustomer = async (req, res) => {
         
          // password strength 
         if(password.length < 6)
-        return res.status(400).json({message: "Minimum assword length should be 6"})
+        return res.status(400).json({message: "Password must be at least 6 characters"})
        
         // if EMAIL already exists
         const existingEmail = await Customer.findOne({email})
@@ -34,7 +34,7 @@ export const registerCustomer = async (req, res) => {
         const token = genToken(newCustomer._id)
         res.cookie("token", token, {httpOnly: true})
 
-        res.status(200).json({success: true, message: "Custoner registered successfully", customer: newCustomer})
+        res.status(201).json({success: true, message: "Customer registered successfully", customer: {_id: newCustomer._id, fullName: newCustomer.fullName, email: newCustomer.email, phone: newCustomer.phone}})
     }catch(error){
         res.status(500).json({message: "Internal Server Error", error: error})
     }
@@ -47,7 +47,7 @@ export const loginCustomer = async (req, res) => {
         const customer = await Customer.findOne({email})
 
         if(!customer)
-        return res.status(404).json({message: "Custoer not found"})
+        return res.status(404).json({message: "Customer not found"})
 
         const same = await bcrypt.compare(password, customer.password)
         if(!same)
@@ -63,3 +63,53 @@ export const loginCustomer = async (req, res) => {
 }
 
 // Customer Profile
+export const profileCustomer = async (req, res) => {
+    try{
+        return res.status(200).json({_id: req.customer._id, fullName: req.customer.fullName, email: req.customer.email, phone: req.customer.phone})
+    }catch(error){
+        res.status(500).json({message: "Internal Server Error", error: error})
+    }
+}
+
+// Change Password
+export const changePasswordCustomer = async (req, res) => {
+    try{
+        const {oldPassword, newPassword} = req.body
+        
+        // check old and new 
+        if(!oldPassword || !newPassword)
+        return res.status(400).json({message: "Old password and new password are required"})
+        
+        // check password strength
+        if(newPassword.length < 6)
+        return res.status(400).json({message: "New password must be at least 6 characters"})
+
+        // match old password
+        const same = await bcrypt.compare(oldPassword, req.customer.password)
+        if(!same)
+        return res.status(401).json({message: "Old password is incorrect"})
+
+        // hashing new password
+        const salt = await bcrypt.genSalt(12)
+        const hashedPassword = await bcrypt.hash(newPassword, salt)
+
+        // update password
+        req.customer.password = hashedPassword
+        await req.customer.save()
+
+        return res.status(200).json({success: true, message: "Password changed successfully"})
+
+    }catch(error){
+        res.status(500).json({message: "Internal Server Error", error: error})
+    }
+}
+
+// Logout 
+export const logoutCustomer = async (req, res) => {
+    try{
+        res.clearCookie("token")
+        return res.status(200).json({success: true, message: "Logged out successfully"})
+    }catch(error){
+        res.status(500).json({message: "Internal Server Error", error: error})
+    }
+}
