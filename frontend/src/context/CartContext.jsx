@@ -1,5 +1,5 @@
-import { createContext, useCallback, useContext, useEffect, useState } from "react"
-import { addToCart as addToCartApi, getCart, updateCartQuantity as updateCartQuantityApi, removeFromCart as removeFromCartApi } from "../services/cartApi.js"
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react"
+import { addToCart as addToCartApi, getCart, updateCartItem, removeCartItem } from "../services/cartApi.js"
 import { useAuth } from "./AuthContext.jsx"
 
 const CartContext = createContext(null)
@@ -10,7 +10,7 @@ export function CartProvider({ children }) {
     const [cartItems, setCartItems] = useState([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState("")
-    const [actionLoading, setActionLoading] = useState("")
+    const [actionLoading, setActionLoading] = useState(null)
 
     const refreshCart = useCallback(async () => {
 
@@ -19,17 +19,24 @@ export function CartProvider({ children }) {
             setLoading(false)
             return
         }
+
         try{
             setLoading(true)
             setError("")
 
             const data = await getCart()
             setCartItems(data.cart || [])
+
         }catch(requestError){
             console.error("Failed to load cart:", requestError)
 
+            setError(
+                requestError.response?.data?.message ||
+                "Unable to load cart."
+            )
+
             setCartItems([])
-            setError("Unable to load your cart.")
+
         }finally{
             setLoading(false)
         }
@@ -49,45 +56,54 @@ export function CartProvider({ children }) {
             setCartItems(data.cart || [])
 
             return {
-                success: true
+                success: true,
+                data
             }
 
         }catch(requestError){
-            console.error("Failed to add product to cart:", requestError)
+            const message =
+                requestError.response?.data?.message ||
+                "Unable to add product to cart."
+
+            setError(message)
 
             return {
                 success: false,
-                message: requestError.response?.data?.message || "Unable to add product to cart."
+                message
             }
 
         }finally{
-            setActionLoading("")
+            setActionLoading(null)
         }
     }
-
 
     const updateQuantity = async (productId, quantity) => {
         try{
             setActionLoading(productId)
             setError("")
 
-            const data = await updateCartQuantityApi(productId, quantity)
+            const data = await updateCartItem(productId, quantity)
             setCartItems(data.cart || [])
 
             return {
-                success: true
+                success: true,
+                data
             }
 
         }catch(requestError){
-            console.error("Failed to update cart quantity:", requestError)
+            const message =
+                requestError.response?.data?.message ||
+                "Unable to update cart."
+
+            setError(message)
 
             return {
                 success: false,
-                message: requestError.response?.data?.message || "Unable to update quantity."
+                message
             }
 
         }finally{
-            setActionLoading("")
+            setActionLoading(null)
         }
     }
 
@@ -96,27 +112,53 @@ export function CartProvider({ children }) {
             setActionLoading(productId)
             setError("")
 
-            const data = await removeFromCartApi(productId)
+            const data = await removeCartItem(productId)
             setCartItems(data.cart || [])
 
             return {
-                success: true
+                success: true,
+                data
             }
+
         }catch(requestError){
-            console.error("Failed to remove product from cart:", requestError)
+            const message =
+                requestError.response?.data?.message ||
+                "Unable to remove product."
+
+            setError(message)
 
             return {
                 success: false,
-                message: requestError.response?.data?.message || "Unable to remove product."
+                message
             }
+
         }finally{
-            setActionLoading("")
+            setActionLoading(null)
         }
     }
-    // Derived values
-    const totalItems = cartItems.reduce((total, item) => total + item.quantity, 0)
 
-    const subtotal = cartItems.reduce((total, item) => total + Number(item.product.price) * item.quantity, 0)
+    const clearCart = useCallback(() => {
+        setCartItems([])
+        setError("")
+    }, [])
+
+    // Derived values
+    const totalItems = useMemo(() => {
+        return cartItems.reduce(
+            (total, item) => total + Number(item.quantity || 0),
+            0
+        )
+    }, [cartItems])
+
+    const subtotal = useMemo(() => {
+        return cartItems.reduce(
+            (total, item) =>
+                total +
+                Number(item.product?.price || 0) *
+                Number(item.quantity || 0),
+            0
+        )
+    }, [cartItems])
 
     return (
         <CartContext.Provider
@@ -130,7 +172,8 @@ export function CartProvider({ children }) {
                 addToCart,
                 updateQuantity,
                 removeFromCart,
-                refreshCart
+                refreshCart,
+                clearCart
             }}
         >
             {children}
