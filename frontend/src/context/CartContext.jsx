@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react"
-import { addToCart as addToCartApi, getCart, updateCartItem, removeCartItem } from "../services/cartApi.js"
+import { addToCart as addToCartApi, getCart, updateCartQuantity as updateCartItem, removeFromCart as removeCartItem } from "../services/cartApi.js"
 import { useAuth } from "./AuthContext.jsx"
 
 const CartContext = createContext(null)

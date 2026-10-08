@@ -1,7 +1,7 @@
 import mongoose from "mongoose"
 import crypto from "node:crypto"
 
-import Order from "../models/order/models.js"
+import Order from "../models/order.models.js"
 import Product from "../models/product.models.js"
 import Customer from "../models/customer.models.js"
 
@@ -107,7 +107,7 @@ export const createPaymentOrder = async (req, res) => {
 
             return res.status(201).json({
                 success: true, shopKartOrderId: shopKartOrder._id,
-                razorpayOrderId: razorpayOrder._id, amount: razorpayOrder.amount,
+                razorpayOrderId: razorpayOrder.id, amount: razorpayOrder.amount,
                 currency: razorpayOrder.currency, key: process.env.RAZORPAY_KEY_ID
             })
         } catch (razorpayError) {
