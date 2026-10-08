@@ -3,14 +3,17 @@ import { useLocation, useNavigate } from "react-router-dom";
 
 import api from "../services/api.js";
 import { useAuth } from "../context/AuthContext.jsx";
+import { useCart } from "../context/CartContext.jsx";
 
 function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
 
   const { setUser } = useAuth();
+  const { totalItems } = useCart();
 
-  const [search, setSearch] = useState("");
+  const [search, setSearch] =
+    useState("");
 
   const isProductsPage =
     location.pathname === "/products";
@@ -20,7 +23,10 @@ function Navbar() {
       await api.post("/customers/logout");
       setUser(null);
     } catch (error) {
-      console.error("Logout failed:", error);
+      console.error(
+        "Logout failed:",
+        error
+      );
     } finally {
       navigate("/login");
     }
@@ -29,7 +35,8 @@ function Navbar() {
   const handleSearch = (event) => {
     event.preventDefault();
 
-    const trimmedSearch = search.trim();
+    const trimmedSearch =
+      search.trim();
 
     if (!trimmedSearch) {
       navigate("/products");
@@ -37,18 +44,23 @@ function Navbar() {
     }
 
     navigate(
-      `/products?search=${encodeURIComponent(trimmedSearch)}`
+      `/products?search=${encodeURIComponent(
+        trimmedSearch
+      )}`
     );
   };
 
   return (
     <header className="sticky top-0 z-50 border-b border-black/5 bg-[#edf1ef]/90 backdrop-blur-xl">
+
       <div className="mx-auto flex h-20 max-w-[1440px] items-center gap-4 px-5 sm:px-8 lg:px-10">
 
         {/* Brand */}
         <button
           type="button"
-          onClick={() => navigate("/home")}
+          onClick={() =>
+            navigate("/home")
+          }
           className="flex shrink-0 items-center gap-2.5 text-left"
         >
           <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#111616] text-lg font-black text-white shadow-[0_8px_20px_rgba(17,22,22,0.18)]">
@@ -86,7 +98,9 @@ function Navbar() {
                 type="search"
                 value={search}
                 onChange={(event) =>
-                  setSearch(event.target.value)
+                  setSearch(
+                    event.target.value
+                  )
                 }
                 placeholder="Search products..."
                 className="w-full bg-transparent text-sm text-[#111616] outline-none placeholder:text-black/35"
@@ -102,7 +116,9 @@ function Navbar() {
           {/* Products */}
           <button
             type="button"
-            onClick={() => navigate("/products")}
+            onClick={() =>
+              navigate("/products")
+            }
             className="hidden h-11 items-center rounded-full bg-white px-5 text-xs font-bold uppercase tracking-[0.08em] text-[#111616] shadow-[0_8px_25px_rgba(22,32,32,0.05)] transition hover:-translate-y-0.5 hover:shadow-[0_10px_30px_rgba(22,32,32,0.08)] sm:flex"
           >
             Products
@@ -111,6 +127,9 @@ function Navbar() {
           {/* Wishlist */}
           <button
             type="button"
+            onClick={() =>
+              navigate("/wishlist")
+            }
             className="hidden h-11 w-11 items-center justify-center rounded-full bg-white text-[#111616] shadow-[0_8px_25px_rgba(22,32,32,0.05)] transition hover:-translate-y-0.5 sm:flex"
             aria-label="Wishlist"
           >
@@ -119,11 +138,12 @@ function Navbar() {
             </span>
           </button>
 
-          {/* Shopping Bag */}
+          {/* Shopping Cart */}
           <button
             type="button"
-            className="hidden h-11 w-11 items-center justify-center rounded-full bg-white text-[#111616] shadow-[0_8px_25px_rgba(22,32,32,0.05)] transition hover:-translate-y-0.5 sm:flex"
-            aria-label="Shopping bag"
+            onClick={() => navigate("/cart")}
+            className="relative hidden h-11 w-11 items-center justify-center rounded-full bg-white text-[#111616] shadow-[0_8px_25px_rgba(22,32,32,0.05)] transition hover:-translate-y-0.5 sm:flex"
+            aria-label="Shopping cart"
           >
             <svg
               viewBox="0 0 24 24"
@@ -144,6 +164,12 @@ function Navbar() {
                 strokeLinecap="round"
               />
             </svg>
+
+            {totalItems > 0 && (
+              <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-[#d9ff45] px-1 text-[10px] font-black text-[#111616]">
+                {totalItems}
+              </span>
+            )}
           </button>
 
           {/* Logout */}

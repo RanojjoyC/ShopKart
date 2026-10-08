@@ -13,7 +13,7 @@ const productSchema = new mongoose.Schema({
     },
     price: {
         type: Number,
-        requiredL: true,
+        required: true,
         min: [0.01, "Price must be greater than 0"]
     },
     category: {

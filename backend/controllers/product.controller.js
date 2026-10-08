@@ -37,7 +37,7 @@ export const createProduct = async (req, res) => {
 export const getProducts = async (req, res) => {
     try{
         const { search, category, sort } = req.query
-        const query = []
+        const query = {}
 
         if(search?.trim()){
             query.name = {
