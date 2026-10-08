@@ -32,68 +32,44 @@ function ProductDetails() {
 
 
   useEffect(() => {
-
     const fetchProduct = async () => {
-
-      try {
-
+      try{
         setLoading(true);
         setError("");
 
-        const data =
-          await getProductById(id);
-
+        const data = await getProductById(id);
         setProduct(data.product);
-
-      } catch (requestError) {
-
+      }catch(requestError){
         console.error(
           "Failed to fetch product:",
           requestError
         );
-
         setProduct(null);
-
         setError(
           requestError.response?.data?.message ||
           "Something went wrong while loading the product."
         );
-
-      } finally {
-
+      }finally{
         setLoading(false);
-
       }
     };
-
-
     fetchProduct();
-
   }, [id]);
 
 
   const handleAddToCart = async () => {
 
-    if (
-      !product ||
-      product.stock === 0 ||
-      actionLoading === product._id
-    ) {
-      return;
-    }
+    if(!product || product.stock === 0 || actionLoading === product._id)
+    return;
 
-    const result =
-      await addToCart(product._id);
+    const result = await addToCart(product._id);
 
-    if (!result.success) {
-
+    if(!result.success){
       setError(
         result.message ||
         "Unable to add product to cart."
       );
-
     }
-
   };
 
 

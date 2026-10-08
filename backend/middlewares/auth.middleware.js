@@ -9,7 +9,7 @@ export const isAuthenticated = async (req, res, next) => {
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET)
 
-        const customer = await Customer.findById(decoded.customerId)
+        const customer = await Customer.findById(decoded.customerId).select("-wishlist")
         if(!customer)
         return res.status(404).json({message: "Customer not found, token invalid"})
 
