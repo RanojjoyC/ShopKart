@@ -172,6 +172,15 @@ function Navbar() {
             )}
           </button>
 
+          {/* Orders */}
+          <button
+            type="button"
+            onClick={() => navigate("/orders")}
+            className="hidden h-11 items-center rounded-full bg-white px-5 text-xs font-bold uppercase tracking-[0.08em] text-[#111616] shadow-[0_8px_25px_rgba(22,32,32,0.05)] transition hover:-translate-y-0.5 hover:shadow-[0_10px_30px_rgba(22,32,32,0.08)] sm:flex"
+          >
+            Orders
+          </button>
+
           {/* Logout */}
           <button
             type="button"

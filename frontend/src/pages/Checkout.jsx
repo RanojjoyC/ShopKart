@@ -21,32 +21,14 @@ const initialForm = {
 function Checkout() {
     const navigate = useNavigate()
 
-    const {
-        cartItems,
-        loading: cartLoading,
-        subtotal,
-        clearCart
-    } = useCart()
-
-
-    const [form, setForm] =
-        useState(initialForm)
-
-    const [error, setError] =
-        useState("")
-
-    const [fieldErrors, setFieldErrors] =
-        useState({})
-
-    const [placingOrder, setPlacingOrder] =
-        useState(false)
-
+    const { cartItems, loading: cartLoading, subtotal, clearCart } = useCart()
+    const [form, setForm] = useState(initialForm)
+    const [error, setError] = useState("")
+    const [fieldErrors, setFieldErrors] = useState({})
+    const [placingOrder, setPlacingOrder] = useState(false)
 
     const handleChange = (event) => {
-        const {
-            name,
-            value
-        } = event.target
+        const { name, value } = event.target
 
         setForm((previous) => ({
             ...previous,
@@ -65,12 +47,10 @@ function Checkout() {
     const validateForm = () => {
         const errors = {}
 
-
         if (!form.fullName.trim()) {
             errors.fullName =
                 "Full name is required."
         }
-
 
         if (!form.phone.trim()) {
             errors.phone =
@@ -164,40 +144,22 @@ function Checkout() {
         }
 
 
-        if (
-            !cartItems ||
-            cartItems.length === 0
-        ) {
-            setError(
-                "Your cart is empty."
-            )
-
+        if(!cartItems || cartItems.length === 0){
+            setError("Your cart is empty.")
             return
         }
 
 
         try {
             setPlacingOrder(true)
+            const scriptLoaded = await loadRazorpayScript()
 
-
-            const scriptLoaded =
-                await loadRazorpayScript()
-
-
-            if (!scriptLoaded) {
-                setError(
-                    "Unable to load Razorpay Checkout. Please try again."
-                )
-
+            if(!scriptLoaded){
+                setError("Unable to load Razorpay Checkout. Please try again.")
                 return
             }
 
-
-            const data =
-                await createPaymentOrder(
-                    form
-                )
-
+            const data = await createPaymentOrder(form)
 
             const options = {
                 key: data.key,

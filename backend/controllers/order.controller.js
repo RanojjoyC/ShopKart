@@ -132,7 +132,6 @@ export const verifyPayment = async (req, res) => {
         if(!shopKartOrderId || !razorpay_order_id || !razorpay_payment_id || !razorpay_signature)
         return res.status(400).json({success: false, message: "Payment verification data is incomplete"})
 
-
         if(!mongoose.Types.ObjectId.isValid(shopKartOrderId))
         return res.status(400).json({success: false, message: "Invalid ShopKart Order ID"})
         
@@ -158,10 +157,7 @@ export const verifyPayment = async (req, res) => {
 
         const expectedSignature =
             crypto
-                .createHmac(
-                    "sha256",
-                    process.env.RAZORPAY_KEY_SECRET
-                )
+                .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
                 .update(body)
                 .digest("hex")
 
@@ -175,6 +171,9 @@ export const verifyPayment = async (req, res) => {
         order.status = "PLACED"
         order.razorpayPaymentId = razorpay_payment_id
         await order.save()
+
+        for(const item of order.items) 
+        await Product.findByIdAndUpdate(item.product, {$inc: { stock: -item.quantity }})
 
         const customer = await Customer.findById(req.customer._id)
 

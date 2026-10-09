@@ -141,21 +141,43 @@ function OrderDetails() {
 
                 <section className="overflow-hidden rounded-[34px] bg-[#f8faf7] px-6 py-10 text-center shadow-[0_25px_70px_rgba(39,54,54,0.08)] sm:px-10">
 
-                    <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[#d9ff45] text-3xl">
-                        ✓
-                    </div>
+                    {order.paymentStatus === "PAID" ? (
+                        <>
+                            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[#d9ff45] text-3xl">
+                                ✓
+                            </div>
 
-                    <p className="mt-5 text-xs font-bold uppercase tracking-[0.18em] text-black/40">
-                        Order Confirmation
-                    </p>
+                            <p className="mt-5 text-xs font-bold uppercase tracking-[0.18em] text-black/40">
+                                Order Confirmation
+                            </p>
 
-                    <h1 className="mt-2 text-4xl font-black tracking-[-0.06em] sm:text-5xl">
-                        Order Placed Successfully
-                    </h1>
+                            <h1 className="mt-2 text-4xl font-black tracking-[-0.06em] sm:text-5xl">
+                                Order Placed Successfully
+                            </h1>
 
-                    <p className="mx-auto mt-4 max-w-2xl text-sm leading-6 text-black/50">
-                        Your ShopKart order has been saved successfully.
-                    </p>
+                            <p className="mx-auto mt-4 max-w-2xl text-sm leading-6 text-black/50">
+                                Your ShopKart order has been saved successfully.
+                            </p>
+                        </>
+                    ) : (
+                        <>
+                            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-yellow-400 text-3xl text-white">
+                                !
+                            </div>
+
+                            <p className="mt-5 text-xs font-bold uppercase tracking-[0.18em] text-black/40">
+                                Order Status
+                            </p>
+
+                            <h1 className="mt-2 text-4xl font-black tracking-[-0.06em] sm:text-5xl">
+                                Payment Pending
+                            </h1>
+
+                            <p className="mx-auto mt-4 max-w-2xl text-sm leading-6 text-black/50">
+                                Order Created Successfully but payment is still pending.
+                            </p>
+                        </>
+                    )}
 
                 </section>
 
