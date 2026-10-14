@@ -11,6 +11,8 @@ export const getProducts = async ({
   search = "",
   category = "",
   sort = "",
+  page,
+  limit,
 } = {}) => {
   const params = {};
 
@@ -24,6 +26,14 @@ export const getProducts = async ({
 
   if (sort) {
     params.sort = sort;
+  }
+
+  if (page) {
+    params.page = page;
+  }
+
+  if (limit) {
+    params.limit = limit;
   }
 
   const response = await productApi.get("/products", {

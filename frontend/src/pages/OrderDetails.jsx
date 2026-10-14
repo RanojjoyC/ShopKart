@@ -1,35 +1,21 @@
-import {
-    useEffect,
-    useState
-} from "react"
-
-import {
-    useNavigate,
-    useParams
-} from "react-router-dom"
+import { useEffect, useState } from "react"
+import { useNavigate, useParams } from "react-router-dom"
 
 import Navbar from "../components/Navbar.jsx"
 
-import {
-    getOrderById
-} from "../services/orderApi.js"
+import { getOrderById } from "../services/orderApi.js"
 
 
 function OrderDetails() {
-    const {
-        id
-    } = useParams()
+    const { id } = useParams()
 
     const navigate = useNavigate()
 
-    const [order, setOrder] =
-        useState(null)
+    const [order, setOrder] = useState(null)
 
-    const [loading, setLoading] =
-        useState(true)
+    const [loading, setLoading] = useState(true)
 
-    const [error, setError] =
-        useState("")
+    const [error, setError] = useState("")
 
 
     useEffect(() => {
@@ -39,15 +25,9 @@ function OrderDetails() {
                     setLoading(true)
                     setError("")
 
-                    const data =
-                        await getOrderById(
-                            id
-                        )
-
-                    setOrder(
-                        data.order
-                    )
-
+                    const data = await getOrderById(id)
+                    setOrder(data.order)
+                    
                 } catch (
                 requestError
                 ) {
@@ -161,21 +141,36 @@ function OrderDetails() {
                         </>
                     ) : (
                         <>
-                            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-yellow-400 text-3xl text-white">
-                                !
+                            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-red-100 text-3xl text-red-600">
+                                ✕
                             </div>
 
-                            <p className="mt-5 text-xs font-bold uppercase tracking-[0.18em] text-black/40">
-                                Order Status
+                            <p className="mt-5 text-xs font-bold uppercase tracking-[0.18em] text-red-600">
+                                Payment Status
                             </p>
 
-                            <h1 className="mt-2 text-4xl font-black tracking-[-0.06em] sm:text-5xl">
-                                Payment Pending
+                            <h1 className="mt-2 text-4xl font-black tracking-[-0.06em] text-red-600 sm:text-5xl">
+                                Payment Failed
                             </h1>
 
                             <p className="mx-auto mt-4 max-w-2xl text-sm leading-6 text-black/50">
-                                Order Created Successfully but payment is still pending.
+                                The payment for this order was not completed. You can retry payment to complete your purchase.
                             </p>
+
+                            <button
+                                type="button"
+                                onClick={() =>
+                                    navigate("/checkout", {
+                                        state: { retryOrder: order }
+                                    })
+                                }
+                                className="mt-6 inline-flex items-center gap-2 rounded-2xl bg-red-600 px-6 py-3.5 text-sm font-black text-white shadow-[0_8px_20px_rgba(220,38,38,0.25)] transition hover:bg-red-700 hover:-translate-y-0.5 cursor-pointer"
+                            >
+                                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                </svg>
+                                Retry Payment
+                            </button>
                         </>
                     )}
 
@@ -198,8 +193,16 @@ function OrderDetails() {
                                 </p>
                             </div>
 
-                            <span className="w-fit rounded-full bg-[#d9ff45] px-3 py-1.5 text-xs font-black uppercase tracking-[0.08em]">
-                                {order.status}
+                            <span
+                                className={`w-fit rounded-full px-3 py-1.5 text-xs font-black uppercase tracking-[0.08em] ${
+                                    order.paymentStatus === "PAID"
+                                        ? "bg-[#d9ff45] text-[#111616]"
+                                        : "bg-red-100 text-red-700"
+                                }`}
+                            >
+                                {order.paymentStatus === "PAID"
+                                    ? order.status
+                                    : "FAILED"}
                             </span>
 
                         </div>

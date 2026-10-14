@@ -36,7 +36,7 @@ export const createProduct = async (req, res) => {
 // Search + Retrieve Products
 export const getProducts = async (req, res) => {
     try{
-        const { search, category, sort } = req.query
+        const { search, category, sort, page, limit } = req.query
         const query = {}
 
         if(search?.trim()){
@@ -56,9 +56,29 @@ export const getProducts = async (req, res) => {
         else if(sort === "price_desc")
         productQuery = productQuery.sort({price: -1})
 
+        const total = await Product.countDocuments(query)
+
+        if(page && limit){
+            const pageNum = Math.max(1, parseInt(page, 10) || 1)
+            const limitNum = Math.max(1, parseInt(limit, 10) || 12)
+            const skip = (pageNum - 1) * limitNum
+
+            productQuery = productQuery.skip(skip).limit(limitNum)
+            const products = await productQuery
+
+            return res.status(200).json({
+                success: true,
+                count: products.length,
+                total,
+                page: pageNum,
+                totalPages: Math.ceil(total / limitNum),
+                products
+            })
+        }
+
         const products = await productQuery
 
-        return res.status(200).json({success: true, count: products.length, products})
+        return res.status(200).json({success: true, count: products.length, total, products})
     }catch(error){
         return res.status(500).json({message: "Internal Server Error", error: error})
     }

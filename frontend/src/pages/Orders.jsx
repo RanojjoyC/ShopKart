@@ -207,10 +207,16 @@ function Orders() {
                                             </div>
 
 
-                                            <span className="w-fit rounded-full bg-[#d9ff45] px-3 py-1.5 text-xs font-black uppercase tracking-[0.08em] text-[#111616]">
-                                                {
-                                                    order.status
-                                                }
+                                            <span
+                                                className={`w-fit rounded-full px-3 py-1.5 text-xs font-black uppercase tracking-[0.08em] ${
+                                                    order.paymentStatus === "PAID"
+                                                        ? "bg-[#d9ff45] text-[#111616]"
+                                                        : "bg-red-100 text-red-700"
+                                                }`}
+                                            >
+                                                {order.paymentStatus === "PAID"
+                                                    ? order.status
+                                                    : "FAILED"}
                                             </span>
 
                                         </div>
@@ -273,18 +279,36 @@ function Orders() {
                                                 )}
                                             </p>
 
+                                            <div className="flex items-center gap-3">
+                                                {order.paymentStatus !== "PAID" && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() =>
+                                                            navigate("/checkout", {
+                                                                state: { retryOrder: order }
+                                                            })
+                                                        }
+                                                        className="flex items-center gap-1.5 rounded-2xl bg-red-600 px-5 py-3 text-sm font-extrabold text-white shadow-[0_4px_14px_rgba(220,38,38,0.25)] transition hover:bg-red-700 hover:-translate-y-0.5 cursor-pointer"
+                                                    >
+                                                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                                        </svg>
+                                                        Retry Payment
+                                                    </button>
+                                                )}
 
-                                            <button
-                                                type="button"
-                                                onClick={() =>
-                                                    navigate(
-                                                        `/orders/${order._id}`
-                                                    )
-                                                }
-                                                className="rounded-2xl bg-[#111616] px-5 py-3 text-sm font-extrabold text-white"
-                                            >
-                                                View Details
-                                            </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() =>
+                                                        navigate(
+                                                            `/orders/${order._id}`
+                                                        )
+                                                    }
+                                                    className="rounded-2xl bg-[#111616] px-5 py-3 text-sm font-extrabold text-white transition hover:bg-black cursor-pointer"
+                                                >
+                                                    View Details
+                                                </button>
+                                            </div>
 
                                         </div>
 

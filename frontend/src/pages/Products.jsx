@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 
 import Navbar from "../components/Navbar.jsx";
@@ -15,30 +15,30 @@ const categories = [
     "Home",
 ];
 
+const ITEMS_PER_PAGE = 8;
+
 function Products() {
-    const [searchParams, setSearchParams] =
-        useSearchParams();
+    const [searchParams, setSearchParams] = useSearchParams();
 
     const [products, setProducts] = useState([]);
-
     const [search, setSearch] = useState(
         searchParams.get("search") || ""
     );
-
-    const [category, setCategory] =
-        useState("All Categories");
-
+    const [category, setCategory] = useState("All Categories");
     const [sort, setSort] = useState("");
+    const [page, setPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [totalProducts, setTotalProducts] = useState(0);
 
     const [loading, setLoading] = useState(true);
-
     const [error, setError] = useState("");
 
-    useEffect(() => {
-        const urlSearch =
-            searchParams.get("search") || "";
+    const catalogueRef = useRef(null);
 
+    useEffect(() => {
+        const urlSearch = searchParams.get("search") || "";
         setSearch(urlSearch);
+        setPage(1);
     }, [searchParams]);
 
     useEffect(() => {
@@ -54,9 +54,13 @@ function Products() {
                             ? ""
                             : category,
                     sort,
+                    page,
+                    limit: ITEMS_PER_PAGE,
                 });
 
                 setProducts(data.products || []);
+                setTotalPages(data.totalPages || 1);
+                setTotalProducts(data.total !== undefined ? data.total : (data.products?.length || 0));
             } catch (requestError) {
                 console.error(
                     "Failed to fetch products:",
@@ -64,6 +68,8 @@ function Products() {
                 );
 
                 setProducts([]);
+                setTotalPages(1);
+                setTotalProducts(0);
 
                 setError(
                     "Something went wrong while loading products."
@@ -74,10 +80,11 @@ function Products() {
         };
 
         fetchProducts();
-    }, [search, category, sort]);
+    }, [search, category, sort, page]);
 
     const handleSearchChange = (value) => {
         setSearch(value);
+        setPage(1);
 
         const trimmedSearch = value.trim();
 
@@ -87,6 +94,28 @@ function Products() {
             });
         } else {
             setSearchParams({});
+        }
+    };
+
+    const handleCategoryChange = (value) => {
+        setCategory(value);
+        setPage(1);
+    };
+
+    const handleSortChange = (value) => {
+        setSort(value);
+        setPage(1);
+    };
+
+    const handlePageChange = (newPage) => {
+        if (newPage >= 1 && newPage <= totalPages && newPage !== page) {
+            setPage(newPage);
+            if (catalogueRef.current) {
+                catalogueRef.current.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start",
+                });
+            }
         }
     };
 
@@ -128,9 +157,9 @@ function Products() {
                         <select
                             value={category}
                             onChange={(event) =>
-                                setCategory(event.target.value)
+                                handleCategoryChange(event.target.value)
                             }
-                            className="rounded-2xl border border-black/10 bg-white px-4 py-4 text-sm font-semibold text-[#111616] outline-none focus:border-[#111616] focus:ring-4 focus:ring-[#d9ff45]/20"
+                            className="rounded-2xl border border-black/10 bg-white px-4 py-4 text-sm font-semibold text-[#111616] outline-none focus:border-[#111616] focus:ring-4 focus:ring-[#d9ff45]/20 cursor-pointer"
                             aria-label="Filter by category"
                         >
                             {categories.map((item) => (
@@ -146,9 +175,9 @@ function Products() {
                         <select
                             value={sort}
                             onChange={(event) =>
-                                setSort(event.target.value)
+                                handleSortChange(event.target.value)
                             }
-                            className="rounded-2xl border border-black/10 bg-white px-4 py-4 text-sm font-semibold text-[#111616] outline-none focus:border-[#111616] focus:ring-4 focus:ring-[#d9ff45]/20"
+                            className="rounded-2xl border border-black/10 bg-white px-4 py-4 text-sm font-semibold text-[#111616] outline-none focus:border-[#111616] focus:ring-4 focus:ring-[#d9ff45]/20 cursor-pointer"
                             aria-label="Sort products"
                         >
                             <option value="">
@@ -169,7 +198,7 @@ function Products() {
                 </section>
 
                 {/* Product Catalogue */}
-                <section className="mt-10">
+                <section ref={catalogueRef} className="mt-10">
 
                     <div className="mb-6 flex items-end justify-between gap-4">
 
@@ -190,8 +219,8 @@ function Products() {
 
                         {!loading && !error && (
                             <span className="hidden rounded-full bg-white px-4 py-2 text-xs font-bold text-black/45 shadow-[0_8px_25px_rgba(22,32,32,0.05)] sm:inline-flex">
-                                {products.length}{" "}
-                                {products.length === 1
+                                {totalProducts}{" "}
+                                {totalProducts === 1
                                     ? "product"
                                     : "products"}
                             </span>
@@ -256,6 +285,57 @@ function Products() {
 
                             </div>
                         )}
+
+                    {/* Pagination Controls */}
+                    {!loading && !error && totalPages > 1 && (
+                        <div className="mt-12 flex flex-col items-center justify-between gap-4 rounded-[28px] bg-white p-5 shadow-[0_14px_35px_rgba(31,45,45,0.06)] sm:flex-row sm:p-6">
+
+                            <p className="text-xs font-bold text-black/45">
+                                Showing Page <span className="font-black text-[#111616]">{page}</span> of <span className="font-black text-[#111616]">{totalPages}</span> ({totalProducts} total items)
+                            </p>
+
+                            <div className="flex items-center gap-2">
+                                <button
+                                    type="button"
+                                    onClick={() => handlePageChange(page - 1)}
+                                    disabled={page <= 1}
+                                    aria-label="Previous page"
+                                    className="flex h-10 items-center justify-center gap-1 rounded-xl border border-black/10 px-4 text-xs font-extrabold text-[#111616] transition hover:bg-black/5 disabled:cursor-not-allowed disabled:opacity-30 cursor-pointer"
+                                >
+                                    ← Prev
+                                </button>
+
+                                <div className="flex items-center gap-1.5">
+                                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
+                                        <button
+                                            key={pageNum}
+                                            type="button"
+                                            onClick={() => handlePageChange(pageNum)}
+                                            aria-label={`Go to page ${pageNum}`}
+                                            className={`h-10 w-10 rounded-xl text-xs font-black transition cursor-pointer ${
+                                                pageNum === page
+                                                    ? "bg-[#111616] text-white shadow-[0_4px_12px_rgba(17,22,22,0.25)]"
+                                                    : "border border-black/10 bg-white text-[#111616] hover:bg-black/5"
+                                            }`}
+                                        >
+                                            {pageNum}
+                                        </button>
+                                    ))}
+                                </div>
+
+                                <button
+                                    type="button"
+                                    onClick={() => handlePageChange(page + 1)}
+                                    disabled={page >= totalPages}
+                                    aria-label="Next page"
+                                    className="flex h-10 items-center justify-center gap-1 rounded-xl border border-black/10 px-4 text-xs font-extrabold text-[#111616] transition hover:bg-black/5 disabled:cursor-not-allowed disabled:opacity-30 cursor-pointer"
+                                >
+                                    Next →
+                                </button>
+                            </div>
+
+                        </div>
+                    )}
 
                 </section>
 
