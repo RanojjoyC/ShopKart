@@ -12,7 +12,7 @@ import cartRoutes from './routes/cart.routes.js'
 import orderRoutes from "./routes/order.routes.js"
 
 const app = express()
-app.use(cors({origin: 'http://localhost:5173', credentials: true}))
+app.use(cors({ origin: 'http://localhost:5173', credentials: true }))
 app.use(express.json())
 app.use(cookieParser())
 
@@ -21,10 +21,10 @@ dotenv.config()
 const PORT = 7777
 
 dns.setServers([
-  '8.8.8.8',
-  '[2001:4860:4860::8888]',
-  '8.8.8.8:1053',
-  '[2001:4860:4860::8888]:1053',
+    '8.8.8.8',
+    '[2001:4860:4860::8888]',
+    '8.8.8.8:1053',
+    '[2001:4860:4860::8888]:1053',
 ]);
 
 mongoose.connect(process.env.DB_URL).then(() => {
