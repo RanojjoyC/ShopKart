@@ -2,15 +2,6 @@ import Customer from '../models/customer.models.js'
 import bcrypt from 'bcrypt'
 import { genToken } from '../utils/generateToken.js'
 
-const isProduction = process.env.NODE_ENV === "production" || process.env.RENDER === "true"
-
-export const cookieOptions = {
-    httpOnly: true,
-    secure: isProduction,
-    sameSite: isProduction ? "none" : "lax",
-    maxAge: 30 * 24 * 60 * 60 * 1000
-}
-
 // Register
 export const registerCustomer = async (req, res) => {
     try{
@@ -41,7 +32,7 @@ export const registerCustomer = async (req, res) => {
         })
 
         const token = genToken(newCustomer._id)
-        res.cookie("token", token, cookieOptions)
+        res.cookie("token", token, {httpOnly: true})
 
         res.status(201).json({success: true, message: "Customer registered successfully", customer: {_id: newCustomer._id, fullName: newCustomer.fullName, email: newCustomer.email, phone: newCustomer.phone}})
     }catch(error){
@@ -63,7 +54,7 @@ export const loginCustomer = async (req, res) => {
         return res.status(401).json({message: "Invalid credentials"})
         
         const token = genToken(customer._id)
-        res.cookie("token", token, cookieOptions)
+        res.cookie("token", token, {httpOnly: true})
 
         return res.status(200).json({success: true, message: "Login successful"})
     }catch(error){
@@ -116,11 +107,7 @@ export const changePasswordCustomer = async (req, res) => {
 // Logout 
 export const logoutCustomer = async (req, res) => {
     try{
-        res.clearCookie("token", {
-            httpOnly: true,
-            secure: isProduction,
-            sameSite: isProduction ? "none" : "lax"
-        })
+        res.clearCookie("token")
         return res.status(200).json({success: true, message: "Logged out successfully"})
     }catch(error){
         res.status(500).json({message: "Internal Server Error", error: error})

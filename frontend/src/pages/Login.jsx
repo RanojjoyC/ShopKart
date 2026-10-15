@@ -52,8 +52,8 @@ function Login() {
       await checkAuth();
 
       navigate("/home");
-    } catch (error) {
-      setApiError(error.response?.data?.message || "Invalid Credentials");
+    } catch {
+      setApiError("Invalid Credentials");
     } finally {
       setLoading(false);
     }
